@@ -7,6 +7,8 @@ fn main() {
     let mut vec: Vec<char> = Vec::new();
 
     for i in 0..attempts {
+        println!("You have {}  attempts more", (attempts - (i + 1)));
+
         show_word(&mut vec, &word);
 
         let input = get_user_input();
