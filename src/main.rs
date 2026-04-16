@@ -1,12 +1,18 @@
-use std::io;
+use std::io::{self, Write};
 
 fn main() {
     let attempts = 6;
     let word = String::from("guess");
 
-    let mut vec: Vec<char> = ['s'].to_vec();
+    let mut vec: Vec<char> = Vec::new();
 
-    show_word(&mut vec, &word);
+    for i in 0..attempts {
+        show_word(&mut vec, &word);
+
+        let input = get_user_input();
+
+        guess(&mut vec, &word, input);
+    }
 }
 
 fn show_word(vec: &mut Vec<char>, word: &String) {
@@ -28,13 +34,17 @@ fn guess(vec: &mut Vec<char>, word: &String, input: char) {
             break;
         }
     }
-    println!();
 }
 
-fn input_guess() -> char {
+fn get_user_input() -> char {
     let mut buff = String::new();
 
     loop {
+        print!("Enter your guess(char): ");
+        io::stdout()
+            .flush()
+            .expect("Не удалось очистить буфер вывода");
+
         io::stdin()
             .read_line(&mut buff)
             .expect("Failed to read line");
@@ -42,17 +52,17 @@ fn input_guess() -> char {
         let trimmed_buff = buff.trim();
 
         if trimmed_buff.len() != 1 {
-            print!("Please enter a single char");
+            println!("Please enter a single char");
             continue;
         }
 
-        let buff: char = match trimmed_buff.parse() {
+        let ch: char = match trimmed_buff.parse() {
             Ok(c) => c,
             Err(_) => continue,
         };
 
-        if buff.is_ascii_alphabetic() {
-            buff;
+        if ch.is_ascii_alphabetic() {
+            return ch;
         }
 
         println!("Please do not enter non ascii symbols!");
