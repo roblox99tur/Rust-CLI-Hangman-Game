@@ -37,9 +37,9 @@ fn guess(vec: &mut Vec<char>, word: &String, input: char) {
 }
 
 fn get_user_input() -> char {
-    let mut buff = String::new();
-
     loop {
+        let mut buff = String::new();
+
         print!("Enter your guess(char): ");
         io::stdout()
             .flush()
