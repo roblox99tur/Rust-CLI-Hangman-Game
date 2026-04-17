@@ -1,41 +1,52 @@
 use std::io::{self, Write};
 
 fn main() {
-    let attempts = 6;
+    let mut attempts = 6;
     let word = String::from("guess");
 
     let mut vec: Vec<char> = Vec::new();
 
-    for i in 0..attempts {
-        println!("You have {}  attempts more", (attempts - (i + 1)));
+    while attempts > 0 {
+        println!("You have {}  attempts more ", attempts);
 
-        show_word(&mut vec, &word);
+        if show_word(&mut vec, &word) {
+            println!("You win!");
+            break;
+        }
 
         let input = get_user_input();
 
-        guess(&mut vec, &word, input);
+        if !guess(&mut vec, &word, input) {
+            attempts -= 1;
+        }
     }
 }
 
-fn show_word(vec: &mut Vec<char>, word: &String) {
+fn show_word(vec: &mut Vec<char>, word: &String) -> bool {
+    let mut flag = true;
+
     print!("Word: ");
     for c in word.chars() {
         if !vec.contains(&c) {
             print!("_ ");
+            flag = false;
         } else {
             print!("{} ", c);
         }
     }
     println!();
+    flag
 }
 
-fn guess(vec: &mut Vec<char>, word: &String, input: char) {
+fn guess(vec: &mut Vec<char>, word: &String, input: char) -> bool {
     for c in word.chars() {
-        if c == input {
+        if c == input && !vec.contains(&c) {
             vec.push(c);
-            break;
+            return true;
         }
     }
+
+    false
 }
 
 fn get_user_input() -> char {
