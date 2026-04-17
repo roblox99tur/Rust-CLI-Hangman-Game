@@ -1,22 +1,28 @@
 use std::io::{self, Write};
 
 fn main() {
-    let mut attempts = 6;
+    let attempts = 6;
     let word = String::from("guess");
 
     let mut vec: Vec<char> = Vec::new();
 
+    hangman(&mut vec, &word, attempts);
+}
+
+fn hangman(vec: &mut Vec<char>, word: &String, mut attempts: u8) {
     while attempts > 0 {
+        clear();
+
         println!("You have {}  attempts more ", attempts);
 
-        if show_word(&mut vec, &word) {
+        if show_word(vec, &word) {
             println!("You win!");
             break;
         }
 
         let input = get_user_input();
 
-        if !guess(&mut vec, &word, input) {
+        if !guess(vec, &word, input) {
             attempts -= 1;
         }
     }
@@ -80,4 +86,8 @@ fn get_user_input() -> char {
 
         println!("Please do not enter non ascii symbols!");
     }
+}
+
+fn clear() {
+    println!("\x1B[2J\x1B[1;1H");
 }
