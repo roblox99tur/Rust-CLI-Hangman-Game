@@ -1,4 +1,4 @@
-use std::io::{self, Write, stdin};
+use std::io::{self, Write};
 
 fn main() {
     let attempts = 6;
