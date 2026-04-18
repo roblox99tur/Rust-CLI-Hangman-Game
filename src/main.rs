@@ -50,6 +50,7 @@ fn hangman(vec: &mut Vec<char>, word: &String, mut attempts: u8) {
         if show_word(vec, &word) {
             println!("You win!");
             io::stdin().read_line(&mut String::new()).ok();
+            vec.clear();
             break;
         }
 
