@@ -1,12 +1,44 @@
-use std::io::{self, Write};
+use std::io::{self, Write, stdin};
 
 fn main() {
     let attempts = 6;
+    let game = String::from("hangman");
     let word = String::from("guess");
 
     let mut vec: Vec<char> = Vec::new();
 
-    hangman(&mut vec, &word, attempts);
+    loop {
+        clear();
+        println!("1. Play");
+        println!("2. Exit");
+        println!("3. Switch game ({})", game);
+
+        match input_action() {
+            1 => {
+                hangman(&mut vec, &word, attempts);
+            }
+            2 => {
+                break;
+            }
+            3 => {}
+            _ => {}
+        }
+    }
+}
+
+fn input_action() -> u8 {
+    let mut buff = String::new();
+
+    match io::stdin().read_line(&mut buff) {
+        Ok(_) => {
+            let input: u8 = match buff.trim().parse() {
+                Ok(num) => num,
+                Err(_) => 0,
+            };
+            input
+        }
+        Err(_) => 0,
+    }
 }
 
 fn hangman(vec: &mut Vec<char>, word: &String, mut attempts: u8) {
@@ -17,6 +49,7 @@ fn hangman(vec: &mut Vec<char>, word: &String, mut attempts: u8) {
 
         if show_word(vec, &word) {
             println!("You win!");
+            io::stdin().read_line(&mut String::new()).ok();
             break;
         }
 
