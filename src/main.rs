@@ -1,29 +1,47 @@
+use rand::prelude::SliceRandom;
+use std::fs;
 use std::io::{self, Write};
 
-fn main() {
+fn main() -> io::Result<()> {
     let attempts = 6;
     let game = String::from("hangman");
     let word = String::from("guess");
-
-    let mut vec: Vec<char> = Vec::new();
 
     loop {
         clear();
         println!("1. Play");
         println!("2. Exit");
         println!("3. Switch game ({})", game);
+        println!("4. Test");
 
         match input_action() {
             1 => {
-                hangman(&mut vec, &word, attempts);
+                hangman(attempts);
             }
             2 => {
-                break;
+                break Ok(());
             }
             3 => {}
+            4 => continue,
             _ => {}
         }
     }
+}
+
+fn get_random_word(words: &[String]) -> io::Result<String> {
+    words
+        .choose(&mut rand::thread_rng())
+        .cloned()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Словарь пуст"))
+}
+
+fn load_words(path: &str) -> io::Result<Vec<String>> {
+    let file = fs::read_to_string(path)?;
+    Ok(file
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|line| !line.is_empty())
+        .collect())
 }
 
 fn input_action() -> u8 {
@@ -41,25 +59,39 @@ fn input_action() -> u8 {
     }
 }
 
-fn hangman(vec: &mut Vec<char>, word: &String, mut attempts: u8) {
+fn hangman(mut attempts: u8) -> io::Result<()> {
+    let words_list = load_words("words.txt")?;
+    // println!("Words list len: {}", words_list.iter().len());
+
+    let word = get_random_word(&words_list)?;
+    // println!("Word: {}", word);
+
+    let mut vec: Vec<char> = Vec::new();
+
     while attempts > 0 {
         clear();
 
         println!("You have {}  attempts more ", attempts);
 
-        if show_word(vec, &word) {
+        if show_word(&mut vec, &word) {
             println!("You win!");
             io::stdin().read_line(&mut String::new()).ok();
-            vec.clear();
+
             break;
         }
 
         let input = get_user_input();
 
-        if !guess(vec, &word, input) {
+        if !guess(&mut vec, &word, input) {
             attempts -= 1;
         }
+
+        if attempts == 0 {
+            println!("You lose!");
+            io::stdin().read_line(&mut String::new()).ok();
+        }
     }
+    Ok(())
 }
 
 fn show_word(vec: &mut Vec<char>, word: &String) -> bool {
@@ -80,7 +112,7 @@ fn show_word(vec: &mut Vec<char>, word: &String) -> bool {
 
 fn guess(vec: &mut Vec<char>, word: &String, input: char) -> bool {
     for c in word.chars() {
-        if c == input && !vec.contains(&c) {
+        if c.eq_ignore_ascii_case(&input) && !vec.contains(&c) {
             vec.push(c);
             return true;
         }
