@@ -147,7 +147,7 @@ fn hangman(mut attempts: u8) -> io::Result<()> {
         }
 
         if attempts == 0 {
-            println!("You lose!");
+            println!("You lose! The word was {}", word);
             io::stdin().read_line(&mut String::new()).ok();
         }
     }
