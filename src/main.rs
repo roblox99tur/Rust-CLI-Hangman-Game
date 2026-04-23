@@ -2,30 +2,90 @@ use rand::prelude::SliceRandom;
 use std::fs;
 use std::io::{self, Write};
 
-fn main() -> io::Result<()> {
-    let attempts = 6;
-    let game = String::from("hangman");
-    let word = String::from("guess");
+#[derive(Debug)]
+enum Game {
+    Hangman,
+}
 
+struct Settings {
+    attempts: u8,
+    game: Game,
+}
+
+fn main() -> io::Result<()> {
+    let mut settings = Settings {
+        attempts: 6,
+        game: Game::Hangman,
+    };
     loop {
         clear();
         println!("1. Play");
-        println!("2. Exit");
-        println!("3. Switch game ({})", game);
-        println!("4. Test");
+        println!("2. Switch game ({:?})", settings.game);
+        println!("3. Settings");
+        println!("4. Exit");
 
         match input_action() {
             1 => {
-                hangman(attempts);
+                hangman(settings.attempts)?;
             }
-            2 => {
+            2 => {}
+            3 => {
+                settings_menu(&mut settings)?;
+            }
+            4 => {
                 break Ok(());
             }
-            3 => {}
-            4 => continue,
             _ => {}
         }
     }
+}
+
+fn settings_menu(settings: &mut Settings) -> io::Result<()> {
+    loop {
+        clear();
+
+        println!("1. Change count of attempts ({})", settings.attempts);
+        println!("2. ");
+        println!("3. ");
+        println!("4. Exit");
+
+        match input_action() {
+            1 => {
+                change_attempts(settings)?;
+            }
+            2 => {}
+            3 => {}
+            4 => {
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    Ok(())
+}
+
+fn change_attempts(settings: &mut Settings) -> io::Result<()> {
+    loop {
+        clear();
+
+        print!("Print the number of attempts: ");
+        io::stdout()
+            .flush()
+            .expect("Не удалось очистить буфер вывода");
+        match input_action() {
+            0 => {
+                println!("Number of attempts must be greater than 0");
+                continue;
+            }
+            other => {
+                settings.attempts = other;
+                break;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 fn get_random_word(words: &[String]) -> io::Result<String> {
