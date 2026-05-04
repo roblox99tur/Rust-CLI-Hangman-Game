@@ -182,10 +182,12 @@ fn hangman() -> io::Result<()> {
         show_keyboard(&tries);
 
         let input = get_user_input();
-        tries.push(input);
-        if !guess(&mut vec, &word, input) {
+
+        if !guess(&mut vec, &word, input) && !tries.contains(&input) {
             attempts -= 1;
         }
+
+        tries.push(input);
 
         if attempts == 0 {
             clear();
