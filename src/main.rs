@@ -8,31 +8,29 @@ enum Game {
 }
 
 struct Settings {
-    attempts: u8,
     game: Game,
 }
 
 fn main() -> io::Result<()> {
     let mut settings = Settings {
-        attempts: 6,
         game: Game::Hangman,
     };
     loop {
         clear();
         println!("1. Play");
         println!("2. Switch game ({:?})", settings.game);
-        println!("3. Settings");
-        println!("4. Exit");
+        // println!("3. Settings");
+        println!("3. Exit");
 
         match input_action() {
             1 => {
-                hangman(settings.attempts)?;
+                hangman()?;
             }
             2 => {}
+            // 3 => {
+            //     settings_menu(&mut settings)?;
+            // }
             3 => {
-                settings_menu(&mut settings)?;
-            }
-            4 => {
                 break Ok(());
             }
             _ => {}
@@ -44,44 +42,17 @@ fn settings_menu(settings: &mut Settings) -> io::Result<()> {
     loop {
         clear();
 
-        println!("1. Change count of attempts ({})", settings.attempts);
+        println!("1. ");
         println!("2. ");
-        println!("3. ");
-        println!("4. Exit");
+        println!("3. Exit");
 
         match input_action() {
-            1 => {
-                change_attempts(settings)?;
-            }
+            1 => {}
             2 => {}
-            3 => {}
-            4 => {
+            3 => {
                 break;
             }
             _ => {}
-        }
-    }
-
-    Ok(())
-}
-
-fn change_attempts(settings: &mut Settings) -> io::Result<()> {
-    loop {
-        clear();
-
-        print!("Print the number of attempts: ");
-        io::stdout()
-            .flush()
-            .expect("Не удалось очистить буфер вывода");
-        match input_action() {
-            0 => {
-                println!("Number of attempts must be greater than 0");
-                continue;
-            }
-            other => {
-                settings.attempts = other;
-                break;
-            }
         }
     }
 
@@ -119,17 +90,85 @@ fn input_action() -> u8 {
     }
 }
 
-fn hangman(mut attempts: u8) -> io::Result<()> {
-    let words_list = load_words("words.txt")?;
-    // println!("Words list len: {}", words_list.iter().len());
+fn hangman() -> io::Result<()> {
+    let hangman_stages: [&str; 7] = [
+        r#"
+                +-------+
+                |       |
+                |
+                |
+                |
+                |
+                ========="#,
+        // 1: Голова
+        r#"
+                +-------+
+                |       |
+                |       O
+                |
+                |
+                |
+                ========="#,
+        // 2: Туловище
+        r#"
+                +-------+
+                |       |
+                |       O
+                |       |
+                |
+                |
+                ========="#,
+        // 3: Одна рука
+        r#"
+                +-------+
+                |       |
+                |       O
+                |      /|
+                |
+                |
+                ========="#,
+        // 4: Обе руки
+        r#"
+                +-------+
+                |       |
+                |       O
+                |      /|\
+                |
+                |
+                ========="#,
+        // 5: Одна нога
+        r#"
+                +-------+
+                |       |
+                |       O
+                |      /|\
+                |      /
+                |
+                ========="#,
+        // 6: Повешен (6 ошибок)
+        r#"
+                +-------+
+                |       |
+                |       O
+                |      /|\
+                |      / \
+                |
+                ========="#,
+    ];
 
+    let mut tries: Vec<char> = Vec::new();
+
+    let mut attempts: usize = 6;
+
+    let words_list = load_words("words.txt")?;
     let word = get_random_word(&words_list)?;
-    // println!("Word: {}", word);
 
     let mut vec: Vec<char> = Vec::new();
 
     while attempts > 0 {
         clear();
+
+        println!("{}", hangman_stages[6 - attempts]);
 
         println!("You have {}  attempts more ", attempts);
 
@@ -140,13 +179,21 @@ fn hangman(mut attempts: u8) -> io::Result<()> {
             break;
         }
 
-        let input = get_user_input();
+        show_keyboard(&tries);
 
+        let input = get_user_input();
+        tries.push(input);
         if !guess(&mut vec, &word, input) {
             attempts -= 1;
         }
 
         if attempts == 0 {
+            clear();
+
+            println!("{}", hangman_stages[6 - attempts]);
+
+            show_word(&mut vec, &word);
+
             println!("You lose! The word was {}", word);
             io::stdin().read_line(&mut String::new()).ok();
         }
@@ -216,4 +263,23 @@ fn get_user_input() -> char {
 
 fn clear() {
     println!("\x1B[2J\x1B[1;1H");
+}
+
+fn show_keyboard(vec: &Vec<char>) {
+    let qwerty_alphabet: [char; 26] = [
+        'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k',
+        'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm',
+    ];
+
+    for (i, &letter) in qwerty_alphabet.iter().enumerate() {
+        if !vec.contains(&letter) {
+            print!("{} ", letter);
+        } else {
+            print!("_ ",);
+        }
+        if i == 9 || i == 18 {
+            println!();
+        }
+    }
+    println!();
 }
