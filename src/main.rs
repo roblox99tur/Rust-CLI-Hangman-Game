@@ -1,38 +1,25 @@
-
-use std::io;
-
 mod hangman;
 mod utils;
 
-#[derive(Debug)]
-enum Game {
-    Hangman,
-}
-
-struct Settings {
-    game: Game,
-}
-
-fn main() -> io::Result<()> {
-    let mut settings = Settings {
-        game: Game::Hangman,
-    };
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         utils::clear();
         println!("1. Play");
-        println!("2. Switch game ({:?})", settings.game);
-        // println!("3. Settings");
-        println!("3. Exit");
+        println!("2. Show history");
+        println!("3. Clear history");
+        println!("4. Exit");
 
         match utils::input_action() {
             1 => {
                 hangman::hangman_game()?;
             }
-            2 => {}
-            // 3 => {
-            //     settings_menu(&mut settings)?;
-            // }
+            2 => {
+                utils::History::show_history(&utils::read_json_from_file()?);
+            }
             3 => {
+                utils::clear_history()?;
+            }
+            4 => {
                 break Ok(());
             }
             _ => {}
