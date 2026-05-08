@@ -9,7 +9,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("3. Clear history");
         println!("4. Exit");
 
-        match utils::input_action() {
+        let action: usize = match utils::input().parse() {
+            Ok(num) => num,
+            Err(_) => 0,
+        };
+
+        match action {
             1 => {
                 hangman::hangman_game()?;
             }
